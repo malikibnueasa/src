@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: robo_com
+    relative_path: urdf/robo_com.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/robo_com.srdf
+  CONFIG:
+    author_name: malik
+    author_email: malikibnueasa@gmail.com
+    generated_timestamp: 1652865156

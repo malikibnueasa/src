@@ -1,0 +1,4 @@
+<launch>
+    <include file="/home/malikibnueasa/catkin_ws/src/moveit_com/launch/gazebo.launch" />
+    <include file="/home/malikibnueasa/catkin_ws/src/moveit_com_sec/launch/gazebo.launch" />
+</launch>
