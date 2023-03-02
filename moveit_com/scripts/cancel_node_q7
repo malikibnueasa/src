@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+
+import rospy
+import actionlib
+from actionlib_msgs.msg import GoalID
+from std_msgs.msg import String,Bool
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
+class CancelNode:
+    def __init__(self):
+        rospy.init_node('cancel_node')
+        self.pub_cancel = rospy.Publisher('cancel_flag', String, queue_size=10)
+        
+
+    def run(self):
+        while not rospy.is_shutdown():
+            user_input = input("Enter the Table number to cancel (seperate by ,): ")
+            self.pub_cancel.publish(user_input)
+
+
+if __name__ == '__main__':
+    cancel_node = CancelNode()
+    cancel_node.run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# #!/usr/bin/env python3
+
+
+
+# class CancelNode:
+#     def __init__(self):
+#         rospy.init_node('cancel_node')
+#         self.pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
+#         self.pub_cancel = rospy.Publisher('cancel_flag', Bool, queue_size=10)
+#         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+#         self.client.wait_for_server()
+
+#     def cancel_goal(self):
+#         rospy.loginfo("Cancelling current goal")
+#         self.client.cancel_goal()
+#         self.pub.publish(GoalID())
+
+#     def run(self):
+#         while not rospy.is_shutdown():
+#             user_input = input("Enter 'c' to cancel the movement: ")
+#             if user_input == 'c':
+#                 self.cancel_goal()
+#                 self.pub_cancel.publish(True)
+
+
+# if __name__ == '__main__':
+#     cancel_node = CancelNode()
+#     cancel_node.run()
+
+
+
+

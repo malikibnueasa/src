@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+
+import rospy
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from actionlib_msgs.msg import GoalID
+import sys
+import copy
+import moveit_commander
+import moveit_msgs.msg
+from geometry_msgs.msg import Pose,Quaternion
+import rospkg
+import geometry_msgs.msg
+from math import pi 
+from moveit_commander.conversions import pose_to_list
+from math import radians
+from tf.transformations import quaternion_from_euler,euler_from_quaternion
+from time import sleep
+from std_msgs.msg import Int16, Float64,String,Bool
+from inputimeout import inputimeout, TimeoutOccurred
+
+
+text_loc =['Home','Table1','Table2','Table3','Kitchen']
+glob_var = None
+
+
+class MoveNode:
+    def __init__(self):
+        rospy.init_node('move_node')
+        self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        self.client.wait_for_server()
+        self.cancel_sub = rospy.Subscriber('cancel_flag', String, self.cancel_cb)
+        self.pub_b = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
+
+    def cancel_cb(self, msg):
+        self.list_location = msg.data.split(",")
+        self.list_location =[int(x) for x in self.list_location]
+        self.count = self.count + 1
+        if glob_var in self.list_location:
+            self.client.cancel_goal()
+            self.pub_b.publish(GoalID())
+            
+        self.location = list(set(self.location) - set(self.list_location))
+
+        try:
+            if (self.location == []):
+                self.client.cancel_goal()
+                self.pub_b.publish(GoalID())
+
+        except:
+            pass
+
+
+
+    def go_to(self, x, y, z):
+        goal = MoveBaseGoal()
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.pose.position.x = x
+        goal.target_pose.pose.position.y = y
+        goal.target_pose.pose.position.z = z
+        goal.target_pose.pose.orientation.w = 1.0
+        self.client.send_goal(goal)
+        wait = self.client.wait_for_result()
+        
+        # If the result doesn't arrive, assume the Server is not available
+
+        if wait:
+            sleep(2)
+        # moveit_poses()
+
+        if not wait:
+            rospy.logerr("Action server not available!")
+            rospy.signal_shutdown("Action server not available!")
+        else:
+         # Result of executing the action
+            
+            return self.client.get_result()
+        # print('running')
+        # sleep(10)
+
+    def home_position(self, loc):
+        if (loc == 0): 
+            rospy.loginfo("Heading to Home")
+            self.go_to(0.3327469671548591,-0.07669310109807612,-0.34303521623827754)
+        elif(loc == 1):
+            rospy.loginfo("Heading to Table 1")
+            self.go_to(-0.5745602489172651,-2.7893164804901556,-2.65709415824142)
+        elif( loc ==2):
+            rospy.loginfo("Heading to Table 2")
+            self.go_to(2.57994547476032,-1.925609675033026,-1.5745951272044802)
+        elif( loc ==3):
+            rospy.loginfo("Heading to Table 3")
+            self.go_to(4.3941970305451905,-0.23586030441848677,-0.10364319482621749)
+        elif( loc ==4):
+            rospy.loginfo("Heading to Kitchen")
+            self.go_to(4.190111454705576,2.745814026107766,0.2585562943369818)
+
+            
+    def final(self):
+        while not rospy.is_shutdown():
+            
+            self.location = input("Enter Table number ( 1,2,3 ): ")
+            self.location = self.location.split(',')
+            glob_var = None
+            self.doub = None
+            self.count = 0
+            
+            self.location = [int(i) for i in self.location]
+            self.doub = self.location
+            
+            self.home_position(4)
+            if (self.location == []):
+                self.home_position(0)
+                self.count = -5
+            elif(self.location != []):
+                self.count = 0
+                while self.location != []:
+                    glob_var = self.location[0]
+                    self.dou_count = self.count
+                    self.home_position(glob_var) 
+                    try:
+                        self.location.remove(glob_var)
+                    except:
+                        pass
+            if(self.count == 0):
+                self.home_position(0)
+            elif(self.count>=0):
+                self.home_position(4)
+                self.home_position(0)
+
+
+         
+
+if __name__ == '__main__':
+    move_node = MoveNode()
+    move_node.final()
+
+
+
+
+
+
+
+
+
+
+
